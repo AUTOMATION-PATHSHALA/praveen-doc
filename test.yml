@@ -1,0 +1,65 @@
+---
+- hosts: all
+  gather_facts: false
+  vars:
+    data: "uswxapqzrtd563.uslttrr.amrs.bankofamerica.com,RHEL-8.6,HW-Dell,MODEL-PowerEdge-R740xd,CONSOLE-30.123.244.65,CONS_PING-Yes,USR-NA,PAS-NF,DRIVESTAT-Good,MEMSTAT-Good,PCISTAT-Good,DRIVEID-NA,,,RDST-NA,BIOSREL-12/13/2021,DATE-23-Nov-22,BATSTAT-,USBSTAT-Disabled"
+    _regex: "(.*),(.*),HW-(.*),MODEL-(.*),CONSOLE-(.*),CONS_PING-(.*),USR-(.*),PAS-(.*),DRIVESTAT-(.*),MEMSTAT-(.*),PCISTAT-(.*),DRIVEID-(.*),,,RDST-(.*),BIOSREL-(.*),DATE-(.*),BATSTAT-(.*),USBSTAT-(.*)"
+  tasks:
+    - name: Print data on screen using echo
+      shell: echo "{{ data }}"
+      register: capture_data
+
+    - block:
+
+      - lineinfile:
+          line: "HOSTNAME,OS_TYPE,HARDWARE,MODEL,CONS_PING,USR,PAS,DRIVESTAT,MEMSTAT,PCISTAT,DRIVEID,RDST,BIOSREL,DATE,BATSTAT,USBSTAT"
+          path: "data.txt"
+
+      - lineinfile:
+          line: "{{ hostvars[item].capture_data.stdout |regex_replace(_regex, item + ',\\2,\\3,\\4,\\5,\\6,\\7,\\8,\\9,\\10,\\11,\\12,\\13,\\14.\\15,\\16,\\17') }}"
+          path: "data.txt"
+        loop: "{{ ansible_play_hosts }}"
+      
+      delegate_to: localhost
+      run_once: true
+
+    # - name: Capture data
+    #   set_fact:
+    #     output:
+    #       "{{ data | regex_replace(_regex, '\\1,\\2,\\3,\\4,\\5,\\6,\\7,\\8,\\9,\\10,\\11,\\12,\\13,\\14.\\15,\\16,\\17') }}"
+          # OS_TYPE: "{{ data | regex_replace(_regex, '\\2')  }}"
+          # HARDWARE: "{{ data | regex_replace(_regex, '\\3')  }}"
+          # MODEL: "{{ data | regex_replace(_regex, '\\4') }}"
+          # CONSOLE: "{{ data | regex_replace(_regex, '\\5') }}"
+          # CONS_PING: "{{ data | regex_replace(_regex, '\\6')  }}"
+          # USR: "{{ data | regex_replace(_regex, '\\7')  }}"
+          # PAS: "{{ data | regex_replace(_regex, '\\8') }}"
+          # DRIVESTAT: "{{ data | regex_replace(_regex, '\\9')  }}"
+          # MEMSTAT: "{{ data | regex_replace(_regex, '\\10')  }}"
+          # PCISTAT: "{{ data | regex_replace(_regex, '\\11') }}"
+          # DRIVEID: "{{ data | regex_replace(_regex, '\\12')  }}"
+          # RDST: "{{ data | regex_replace(_regex, '\\13')  }}"
+          # BIOSREL: "{{ data | regex_replace(_regex, '\\14') }}"
+          # DATE: "{{ data | regex_replace(_regex, '\\15')  }}"
+          # BATSTAT: "{{ data | regex_replace(_regex, '\\16')  }}"
+          # USBSTAT: "{{ data | regex_replace(_regex, '\\17') }}"
+
+    # - debug: var=output
+    # - debug:
+    #     msg:
+    #       - HOSTNAME  ==>   {{ output.HOSTNAME }}
+    #       - OS_TYPE   ==>   {{ output.OS_TYPE }}
+    #       - HARDWARE  ==>   {{ output.HARDWARE }}
+    #       - MODEL     ==>   {{ output.MODEL }}
+    #       - CONS_PING ==>   {{ output.CONS_PING }}
+    #       - USR       ==>   {{ output.USR }}
+    #       - PAS       ==>   {{ output.PAS }}
+    #       - DRIVESTAT ==>   {{ output.DRIVESTAT }}
+    #       - MEMSTAT   ==>   {{ output.MEMSTAT }}
+    #       - PCISTAT   ==>   {{ output.PCISTAT }}
+    #       - DRIVEID   ==>   {{ output.DRIVEID }}
+    #       - RDST      ==>   {{ output.RDST }}
+    #       - BIOSREL   ==>   {{ output.BIOSREL }}
+    #       - DATE      ==>   {{ output.DATE }}
+    #       - BATSTAT   ==>   {{ output.BATSTAT }}
+    #       - USBSTAT   ==>   {{ output.USBSTAT }}
